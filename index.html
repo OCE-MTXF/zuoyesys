@@ -1,0 +1,93 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>📁 静态文件系统</title>
+    <!-- Font Awesome 图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- 外部样式 -->
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+    <!-- 顶部栏 -->
+    <header class="app-header">
+        <div class="logo"><i class="fas fa-folder-open"></i> 静态文件系统</div>
+        <div class="header-actions">
+            <span class="badge"><i class="fas fa-database"></i> /data</span>
+        </div>
+    </header>
+
+    <!-- 主体 -->
+    <div class="app-body">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-title"><i class="fas fa-folder"></i> 数据目录</div>
+            <div class="sidebar-item active" data-path="/"><i class="fas fa-home"></i> 所有文件</div>
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-item" id="refreshBtn"><i class="fas fa-sync" style="color:var(--primary);"></i> 刷新列表</div>
+            <div class="sidebar-footer"><i class="fas fa-info-circle"></i> 数据来自 data.json</div>
+        </aside>
+
+        <!-- 主内容 -->
+        <main class="main-content">
+            <!-- 工具栏 -->
+            <div class="toolbar">
+                <button class="btn" id="btnRefresh" title="刷新列表"><i class="fas fa-sync"></i><span>刷新</span></button>
+                <div class="divider"></div>
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="输入文件名筛选或直接打开..." />
+                    <button class="btn" id="searchBtn" style="padding:4px 8px;"><i class="fas fa-arrow-right"></i></button>
+                </div>
+                <div class="divider"></div>
+                <div class="view-toggle">
+                    <button class="btn active" id="viewGrid"><i class="fas fa-th"></i></button>
+                    <button class="btn" id="viewList"><i class="fas fa-list"></i></button>
+                </div>
+                <div style="flex:1;"></div>
+                <span style="font-size:12px;color:var(--text-secondary);" id="fileCount">0 个文件</span>
+            </div>
+
+            <!-- 文件列表 -->
+            <div class="file-list-container" id="fileContainer">
+                <div id="fileList"></div>
+            </div>
+
+            <!-- 状态栏 -->
+            <div class="status-bar">
+                <span class="status-item"><i class="fas fa-folder"></i> <span id="statusCount">0</span> 个项目</span>
+                <span class="status-item"><i class="fas fa-hdd"></i> /data</span>
+                <span class="status-item" style="margin-left:auto;"><i class="fas fa-circle" style="color:#22c55e;font-size:10px;"></i> <span id="statusReady">就绪</span></span>
+            </div>
+        </main>
+    </div>
+
+    <!-- 预览面板 -->
+    <div class="preview-panel" id="previewPanel">
+        <div class="preview-header">
+            <div class="title"><i class="fas fa-eye"></i> <span id="previewTitle">预览</span></div>
+            <div class="actions">
+                <button class="btn" id="previewDownload" title="下载文件"><i class="fas fa-download"></i></button>
+                <button class="btn" id="previewClose"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+        <div class="preview-body">
+            <div class="preview-content" id="previewContent">
+                <div style="color:var(--text-secondary);text-align:center;padding:40px;">
+                    <i class="fas fa-file" style="font-size:48px;opacity:0.3;display:block;margin-bottom:12px;"></i>
+                    请选择一个文件预览
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast 容器 -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- 外部 JavaScript -->
+    <script src="app.js"></script>
+</body>
+</html>
