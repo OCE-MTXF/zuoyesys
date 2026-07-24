@@ -27,6 +27,29 @@ const previewDownload = document.getElementById('previewDownload');
 const previewClose = document.getElementById('previewClose');
 
 // ================================================================
+//  缓存优化 - 预计算文件属性
+// ================================================================
+const fileCache = new Map();
+
+function getCachedFileProps(name) {
+    if (fileCache.has(name)) {
+        return fileCache.get(name);
+    }
+    const ext = getFileExtension(name);
+    const props = {
+        icon: getFileIconFromExt(ext),
+        color: getFileColorFromExt(ext),
+        isText: isTextFileFromExt(ext),
+        isImage: isImageFileFromExt(ext),
+        isOffice: isOfficeFileFromExt(ext),
+        isPDF: ext === 'pdf',
+        isArchive: isArchiveFileFromExt(ext),
+    };
+    fileCache.set(name, props);
+    return props;
+}
+
+// ================================================================
 //  工具函数
 // ================================================================
 function formatSize(bytes) {
@@ -39,89 +62,88 @@ function formatSize(bytes) {
 }
 
 function getFileExtension(filename) {
-    return filename.split('.').pop().toLowerCase();
+    const lastDot = filename.lastIndexOf('.');
+    return lastDot > 0 ? filename.slice(lastDot + 1).toLowerCase() : '';
+}
+
+// 优化的图标映射（直接通过扩展名获取）
+const ICON_MAP = {
+    pdf: 'fa-file-pdf', doc: 'fa-file-word', docx: 'fa-file-word',
+    xls: 'fa-file-excel', xlsx: 'fa-file-excel',
+    ppt: 'fa-file-powerpoint', pptx: 'fa-file-powerpoint',
+    jpg: 'fa-file-image', jpeg: 'fa-file-image', png: 'fa-file-image',
+    gif: 'fa-file-image', svg: 'fa-file-image', webp: 'fa-file-image',
+    txt: 'fa-file-alt', xml: 'fa-file-code', csv: 'fa-file-csv', json: 'fa-file-code',
+    zip: 'fa-file-archive', '7z': 'fa-file-archive', rar: 'fa-file-archive',
+    tar: 'fa-file-archive', gz: 'fa-file-archive',
+};
+
+const COLOR_MAP = {
+    pdf: '#dc2626', doc: '#2b5797', docx: '#2b5797',
+    xls: '#217346', xlsx: '#217346',
+    ppt: '#d24726', pptx: '#d24726',
+    jpg: '#8b5cf6', jpeg: '#8b5cf6', png: '#8b5cf6',
+    gif: '#8b5cf6', svg: '#8b5cf6', webp: '#8b5cf6',
+    txt: '#6b7280', xml: '#6b7280', csv: '#6b7280', json: '#6b7280',
+    zip: '#f59e0b', '7z': '#f59e0b', rar: '#f59e0b',
+    tar: '#f59e0b', gz: '#f59e0b',
+};
+
+const TEXT_EXTS = new Set(['txt', 'xml', 'csv', 'json', 'md', 'log', 'css', 'js', 'html', 'htm']);
+const IMAGE_EXTS = new Set(['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'ico']);
+const OFFICE_EXTS = new Set(['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx']);
+const ARCHIVE_EXTS = new Set(['zip', '7z', 'rar', 'tar', 'gz', 'bz2', 'xz']);
+
+function getFileIconFromExt(ext) {
+    return ICON_MAP[ext] || 'fa-file';
+}
+
+function getFileColorFromExt(ext) {
+    return COLOR_MAP[ext] || '#6b7280';
 }
 
 function getFileIcon(name) {
-    const ext = getFileExtension(name);
-    const iconMap = {
-        'pdf': 'fa-file-pdf',
-        'doc': 'fa-file-word',
-        'docx': 'fa-file-word',
-        'xls': 'fa-file-excel',
-        'xlsx': 'fa-file-excel',
-        'ppt': 'fa-file-powerpoint',
-        'pptx': 'fa-file-powerpoint',
-        'jpg': 'fa-file-image',
-        'jpeg': 'fa-file-image',
-        'png': 'fa-file-image',
-        'gif': 'fa-file-image',
-        'svg': 'fa-file-image',
-        'webp': 'fa-file-image',
-        'txt': 'fa-file-alt',
-        'xml': 'fa-file-code',
-        'csv': 'fa-file-csv',
-        'json': 'fa-file-code',
-        'zip': 'fa-file-archive',
-        '7z': 'fa-file-archive',
-        'rar': 'fa-file-archive',
-        'tar': 'fa-file-archive',
-        'gz': 'fa-file-archive',
-    };
-    return iconMap[ext] || 'fa-file';
+    return getFileIconFromExt(getFileExtension(name));
 }
 
 function getFileColor(name) {
-    const ext = getFileExtension(name);
-    const colorMap = {
-        'pdf': '#dc2626',
-        'doc': '#2b5797',
-        'docx': '#2b5797',
-        'xls': '#217346',
-        'xlsx': '#217346',
-        'ppt': '#d24726',
-        'pptx': '#d24726',
-        'jpg': '#8b5cf6',
-        'jpeg': '#8b5cf6',
-        'png': '#8b5cf6',
-        'gif': '#8b5cf6',
-        'svg': '#8b5cf6',
-        'webp': '#8b5cf6',
-        'txt': '#6b7280',
-        'xml': '#6b7280',
-        'csv': '#6b7280',
-        'json': '#6b7280',
-        'zip': '#f59e0b',
-        '7z': '#f59e0b',
-        'rar': '#f59e0b',
-        'tar': '#f59e0b',
-        'gz': '#f59e0b',
-    };
-    return colorMap[ext] || '#6b7280';
+    return getFileColorFromExt(getFileExtension(name));
+}
+
+function isTextFileFromExt(ext) {
+    return TEXT_EXTS.has(ext);
+}
+
+function isImageFileFromExt(ext) {
+    return IMAGE_EXTS.has(ext);
+}
+
+function isOfficeFileFromExt(ext) {
+    return OFFICE_EXTS.has(ext);
 }
 
 function isTextFile(name) {
-    const textExts = ['txt', 'xml', 'csv', 'json', 'md', 'log', 'css', 'js', 'html', 'htm'];
-    return textExts.includes(getFileExtension(name));
+    return isTextFileFromExt(getFileExtension(name));
 }
 
 function isImageFile(name) {
-    const imgExts = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'ico'];
-    return imgExts.includes(getFileExtension(name));
+    return isImageFileFromExt(getFileExtension(name));
 }
 
 function isOfficeFile(name) {
-    const officeExts = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'];
-    return officeExts.includes(getFileExtension(name));
+    return isOfficeFileFromExt(getFileExtension(name));
 }
 
 function isPDFFile(name) {
     return getFileExtension(name) === 'pdf';
 }
 
+function isArchiveFileFromExt(ext) {
+    return ARCHIVE_EXTS.has(ext);
+}
+
 function isArchiveFile(name) {
-    const archiveExts = ['zip', '7z', 'rar', 'tar', 'gz', 'bz2', 'xz'];
-    return archiveExts.includes(getFileExtension(name));
+    return isArchiveFileFromExt(getFileExtension(name));
 }
 
 // ================================================================
@@ -194,44 +216,42 @@ function render() {
 }
 
 function renderGrid(items) {
-    let html = '<div class="file-grid">';
-    for (const item of items) {
-        const icon = getFileIcon(item.name);
-        const color = getFileColor(item.name);
+    const htmlItems = new Array(items.length);
+    for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        const props = getCachedFileProps(item.name);
         const size = formatSize(item.size);
         const modified = item.modified || '--';
-        html += `
+        htmlItems[i] = `
             <div class="file-item" data-name="${item.name}">
-                <span class="icon" style="color:${color}"><i class="fas ${icon}"></i></span>
+                <span class="icon" style="color:${props.color}"><i class="fas ${props.icon}"></i></span>
                 <div class="name" title="${item.name}">${item.name}</div>
                 <div class="meta">${size}</div>
                 <div class="meta" style="font-size:10px;">${modified}</div>
             </div>
         `;
     }
-    html += '</div>';
-    fileListEl.innerHTML = html;
+    fileListEl.innerHTML = '<div class="file-grid">' + htmlItems.join('') + '</div>';
     bindItemEvents();
 }
 
 function renderList(items) {
-    let html = '<div class="file-list">';
-    for (const item of items) {
-        const icon = getFileIcon(item.name);
-        const color = getFileColor(item.name);
+    const htmlItems = new Array(items.length);
+    for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        const props = getCachedFileProps(item.name);
         const size = formatSize(item.size);
         const modified = item.modified || '--';
-        html += `
+        htmlItems[i] = `
             <div class="file-item" data-name="${item.name}">
-                <span class="icon" style="color:${color}"><i class="fas ${icon}"></i></span>
+                <span class="icon" style="color:${props.color}"><i class="fas ${props.icon}"></i></span>
                 <span class="name" title="${item.name}">${item.name}</span>
                 <span class="meta">${modified}</span>
                 <span class="size">${size}</span>
             </div>
         `;
     }
-    html += '</div>';
-    fileListEl.innerHTML = html;
+    fileListEl.innerHTML = '<div class="file-list">' + htmlItems.join('') + '</div>';
     bindItemEvents();
 }
 
@@ -255,7 +275,10 @@ function previewFile(file) {
 
     previewContent.innerHTML = '';
 
-    if (isArchiveFile(file.name)) {
+    // 使用缓存的属性
+    const props = getCachedFileProps(file.name);
+
+    if (props.isArchive) {
         previewContent.innerHTML = `
             <div style="text-align:center;padding:40px;">
                 <i class="fas fa-file-archive" style="font-size:64px;color:#f59e0b;display:block;margin-bottom:16px;"></i>
@@ -273,14 +296,14 @@ function previewFile(file) {
     previewDownload.style.display = 'inline-flex';
     previewDownload.onclick = () => { window.open(fileUrl, '_blank'); };
 
-    if (isPDFFile(file.name)) {
+    if (props.isPDF) {
         previewContent.innerHTML = `<embed src="${fileUrl}" type="application/pdf" width="100%" height="100%" style="min-height:400px;" />`;
-    } else if (isOfficeFile(file.name)) {
+    } else if (props.isOffice) {
         const officeUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(window.location.origin + fileUrl)}`;
         previewContent.innerHTML = `<iframe src="${officeUrl}" width="100%" height="100%" style="min-height:400px;border:none;"></iframe>`;
-    } else if (isImageFile(file.name)) {
+    } else if (props.isImage) {
         previewContent.innerHTML = `<img src="${fileUrl}" class="image-preview" alt="${file.name}" style="max-width:100%;max-height:80vh;object-fit:contain;" />`;
-    } else if (isTextFile(file.name)) {
+    } else if (props.isText) {
         fetch(fileUrl)
             .then(res => {
                 if (!res.ok) throw new Error('获取内容失败');
